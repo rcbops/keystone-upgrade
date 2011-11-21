@@ -19,14 +19,12 @@
 from sqlalchemy import *
 from ConfigParser import ConfigParser
 from migrate.versioning.shell import main
-from pprint import pprint
 
 conf_file = "/etc/keystone/keystone.conf"
 section_name = "keystone.backends.sqlalchemy"
 
 config = ConfigParser()
 config.read(conf_file)
-# pprint(config.get(section_name, "sql_connection"))
 sql_conn = config.get(section_name, "sql_connection")
 
 main(url=sql_conn, debug='True', repository='migrate_repo')

@@ -16,12 +16,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from sqlalchemy import *
-import sys
 from ConfigParser import ConfigParser
 from migrate.versioning.api import version_control, drop_version_control, version, upgrade
 from migrate.versioning.exceptions import DatabaseAlreadyControlledError, DatabaseNotControlledError
-from pprint import pprint
+from sqlalchemy import *
+import sys
 
 conf_file = "/etc/keystone/keystone.conf"
 section_name = "keystone.backends.sqlalchemy"
