@@ -28,6 +28,10 @@ for i in $(seq 0 $((${#tenants[@]} - 1))); do
 done
 echo ""
 
+echo "***** SERVICE LIST ****"
+${CMD} service list
+echo ""
+
 echo "***** ENDPOINT_TEMPLATES LIST ****"
 ${CMD} endpointTemplates list
 echo ""
