@@ -50,6 +50,16 @@ def upgrade(migrate_engine):
         services.insert().values(name=row['id'], desc=row['desc']).execute()
     result.close()
 
+    # Update *NEW* services.type field
+    services.update().where(services.c.name=='compute').values(name='nova').execute()
+    services.update().where(services.c.name=='nova').values(type='compute').execute()
+    services.update().where(services.c.name=='image').values(name='glance').execute()
+    services.update().where(services.c.name=='glance').values(type='image').execute()
+    services.update().where(services.c.name=='identity').values(name='keystone').execute()
+    services.update().where(services.c.name=='keystone').values(type='identity').execute()
+    services.update().where(services.c.name=='storage').values(name='swift').execute()
+    services.update().where(services.c.name=='swift').values(type='storage').execute()
+
     # Copy over users
     result = migrate_engine.execute(
         select(
