@@ -56,4 +56,4 @@ try:
 except DatabaseNotControlledError:
     pass
 
-print ".. Execute ./keystone_commands.sh to verify the db looks good"
+print ".. Execute ./keystone_commands.bash to verify the db looks good"
