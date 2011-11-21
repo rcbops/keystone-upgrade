@@ -124,7 +124,7 @@ def upgrade(migrate_engine):
         )
     )
     for row in result:
-        endpoint_templates.insert().values(id=row['id'], 
+        endpoints.insert().values(id=row['id'], 
             tenant_id=row['tenant_id'],
             endpoint_template_id=row['endpoint_template_id']).execute()
     result.close()
