@@ -4,10 +4,16 @@
 #      command    : add, list, disable, delete, grant, revoke
 
 CMD='keystone-manage'
+VERSION=`dpkg -l | grep keystone | head -1 | awk '{print $3}' | cut -d '-' -f1,2`
 
 echo "***** TENANT LIST ****"
 ${CMD} tenant list
-tenants=(`${CMD} tenant list | grep -v -e 'enabled$' -e '^--' | awk '{print $2}'`)
+if [ $VERSION == '2011.3-d5' ]; then
+    tenants=(`${CMD} tenant list | grep -v -e 'enabled$' -e '^--' | awk '{print $1}'`)
+else
+    # currently works for 2011.3-final
+    tenants=(`${CMD} tenant list | grep -v -e 'enabled$' -e '^--' | awk '{print $2}'`)
+fi
 # for i in $(seq 0 $((${#tenants[@]} - 1))); do echo ${tenants[i]}; done
 echo ""
 
