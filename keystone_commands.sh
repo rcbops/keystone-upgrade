@@ -7,7 +7,7 @@ CMD='keystone-manage'
 
 echo "***** TENANT LIST ****"
 ${CMD} tenant list
-tenants=(`${CMD} tenant list | grep -v -e '^id' -e '^--' | awk '{print $2}'`)
+tenants=(`${CMD} tenant list | grep -v -e 'enabled$' -e '^--' | awk '{print $2}'`)
 # for i in $(seq 0 $((${#tenants[@]} - 1))); do echo ${tenants[i]}; done
 echo ""
 
