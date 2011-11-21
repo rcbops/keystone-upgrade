@@ -17,9 +17,10 @@
 #    under the License.
 
 from sqlalchemy import *
+import sys
 from ConfigParser import ConfigParser
-from migrate.versioning.api import version_control, version, upgrade
-from migrate.versioning.exceptions import DatabaseAlreadyControlledError
+from migrate.versioning.api import version_control, drop_version_control, version, upgrade
+from migrate.versioning.exceptions import DatabaseAlreadyControlledError, DatabaseNotControlledError
 from pprint import pprint
 
 conf_file = "/etc/keystone/keystone.conf"
@@ -32,7 +33,27 @@ config.read(conf_file)
 
 engine = config.get(section_name, "sql_connection")
 latest_version = version(migrate_repository)
+
+# Add Version control to the DB
+print ".. Placing the keystone db under version control"
 try:
     version_control(engine, migrate_repository, version=initial_version)
 except DatabaseAlreadyControlledError:
     pass
+
+# Upgrade the db to version latest_version
+print ".. Upgrading the keystone db to the latest version"
+try:
+    upgrade(engine, migrate_repository, version=latest_version)
+except:
+    e = sys.exc_info()[1]
+    print "Caught an unkown exception: %s" % e
+
+# Drop Version control from the DB
+print ".. Removing the keystone db from version control"
+try:
+    drop_version_control(engine, migrate_repository)
+except DatabaseNotControlledError:
+    pass
+
+print ".. Execute ./keystone_commands.sh to verify the db looks good"
