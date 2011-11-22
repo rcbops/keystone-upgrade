@@ -5,15 +5,105 @@ from migrate.changeset import schema
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, object_mapper
-from keystone.backends.sqlalchemy import models
 
-from pprint import pprint
+Base = declarative_base()
+
+# Define associations first
+class UserRoleAssociation(Base):
+    __tablename__ = 'user_roles'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    role_id = Column(Integer, ForeignKey('roles.id'))
+    tenant_id = Column(Integer, ForeignKey('tenants.id'))
+    __table_args__ = (UniqueConstraint("user_id", "role_id", "tenant_id"), {})
+
+    user = relationship('User')
+
+
+class Endpoints(Base):
+    __tablename__ = 'endpoints'
+    id = Column(Integer, primary_key=True)
+    tenant_id = Column(Integer)
+    endpoint_template_id = Column(Integer, ForeignKey('endpoint_templates.id'))
+    __table_args__ = (
+        UniqueConstraint("endpoint_template_id", "tenant_id"), {})
+
+
+# Define objects
+class Role(Base):
+    __tablename__ = 'roles'
+    __api__ = 'role'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(255))
+    desc = Column(String(255))
+    service_id = Column(Integer, ForeignKey('services.id'))
+    __table_args__ = (
+        UniqueConstraint("name", "service_id"), {})
+
+class Service(Base):
+    __tablename__ = 'services'
+    __api__ = 'service'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(255), unique=True)
+    type = Column(String(255))
+    desc = Column(String(255))
+
+class Tenant(Base):
+    __tablename__ = 'tenants'
+    __api__ = 'tenant'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(255), unique=True)
+    desc = Column(String(255))
+    enabled = Column(Integer)
+
+
+class User(Base):
+    __tablename__ = 'users'
+    __api__ = 'user'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(255), unique=True)
+    password = Column(String(255))
+    email = Column(String(255))
+    enabled = Column(Integer)
+    tenant_id = Column(Integer, ForeignKey('tenants.id'))
+    roles = relationship(UserRoleAssociation, cascade="all")
+    credentials = relationship('Credentials', backref='user', cascade="all")
+
+class Credentials(Base):
+    __tablename__ = 'credentials'
+    __api__ = 'credentials'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('users.id'))
+    tenant_id = Column(Integer, ForeignKey('tenants.id'), nullable=True)
+    type = Column(String(20))  # ('Password','APIKey','EC2')
+    key = Column(String(255))
+    secret = Column(String(255))
+
+
+class Token(Base):
+    __tablename__ = 'token'
+    __api__ = 'token'
+    id = Column(String(255), primary_key=True, unique=True)
+    user_id = Column(Integer)
+    tenant_id = Column(Integer)
+    expires = Column(DateTime)
+
+class EndpointTemplates(Base):
+    __tablename__ = 'endpoint_templates'
+    __api__ = 'endpoint_template'
+    id = Column(Integer, primary_key=True)
+    region = Column(String(255))
+    service_id = Column(Integer, ForeignKey('services.id'))
+    public_url = Column(String(2000))
+    admin_url = Column(String(2000))
+    internal_url = Column(String(2000))
+    enabled = Column(Boolean)
+    is_global = Column(Boolean)
 
 def upgrade(migrate_engine):
     meta = MetaData(bind=migrate_engine)
-    BASE = models.Base
     creation_tables = []
-    for table in reversed(BASE.metadata.sorted_tables):
+    for table in reversed(Base.metadata.sorted_tables):
         creation_tables.append(table)
     meta.create_all(migrate_engine, tables=creation_tables, checkfirst=True)
 
@@ -204,8 +294,7 @@ def upgrade(migrate_engine):
     
 def downgrade(migrate_engine):
     meta = MetaData(bind=migrate_engine)
-    BASE = models.Base
     creation_tables = []
-    for table in reversed(BASE.metadata.sorted_tables):
+    for table in reversed(Base.metadata.sorted_tables):
         creation_tables.append(table)
     meta.drop_all(migrate_engine, tables=creation_tables)
