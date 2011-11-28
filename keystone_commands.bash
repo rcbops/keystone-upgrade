@@ -53,5 +53,4 @@ echo ""
 
 echo "***** CREDENTIALS LIST *****"
 ${CMD} credentials list
-echo "FUNCTION DOES NOT EXIST IN KEYSTONE"
 echo ""
