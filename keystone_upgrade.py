@@ -17,10 +17,15 @@
 #    under the License.
 
 from ConfigParser import ConfigParser
-from migrate.versioning.api import version_control, drop_version_control, version, upgrade
-from migrate.versioning.exceptions import DatabaseAlreadyControlledError, DatabaseNotControlledError
 from sqlalchemy import *
 import sys
+from migrate.versioning.api import version_control, drop_version_control, version, upgrade
+# See LP bug #719834. sqlalchemy-migrate changed location of
+# exceptions.py after 0.6.0.
+try:
+    from migrate.versioning.exceptions import DatabaseAlreadyControlledError, DatabaseNotControlledError
+except ImportError:
+    from migrate.exceptions import DatabaseAlreadyControlledError, DatabaseNotControlledError
 
 conf_file = "/etc/keystone/keystone.conf"
 section_name = "keystone.backends.sqlalchemy"
